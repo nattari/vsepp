@@ -2,10 +2,12 @@
 import nltk
 import pickle
 from collections import Counter
-from pycocotools.coco import COCO
+# from pycocotools.coco import COCO
 import json
 import argparse
 import os
+
+nltk.download('punkt')
 
 annotations = {
     'coco_precomp': ['train_caps.txt', 'dev_caps.txt'],
@@ -16,6 +18,7 @@ annotations = {
     'f30k_precomp': ['train_caps.txt', 'dev_caps.txt'],
     'f8k': ['dataset_flickr8k.json'],
     'f30k': ['dataset_flickr30k.json'],
+    'cub': ['train_instance_caption.json']
 }
 
 
@@ -61,6 +64,14 @@ def from_flickr_json(path):
     return captions
 
 
+def from_cub_json(path):
+    dataset = json.load(open(path, 'r'))['info']
+    captions = []
+    for i, d in enumerate(dataset):
+        captions += [str(x.encode('utf-8')) for x in d['all_captions']]
+    return captions
+
+
 def from_txt(txt):
     captions = []
     with open(txt, 'rb') as f:
@@ -78,6 +89,9 @@ def build_vocab(data_path, data_name, jsons, threshold):
             captions = from_coco_json(full_path)
         elif data_name == 'f8k' or data_name == 'f30k':
             captions = from_flickr_json(full_path)
+        elif data_name == 'cub':
+            full_path = os.path.join(data_path, path)
+            captions = from_cub_json(full_path)
         else:
             captions = from_txt(full_path)
         for i, caption in enumerate(captions):
@@ -113,8 +127,9 @@ def main(data_path, data_name):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--data_path', default='/w/31/faghri/vsepp_data/')
-    parser.add_argument('--data_name', default='coco',
+    parser.add_argument('--data_path', default='/Users/nattari/Bielefeld_Work/'
+                        'Data/CUB_200_2011/CUB_200_2011')
+    parser.add_argument('--data_name', default='cub',
                         help='{coco,f8k,f30k,10crop}_precomp|coco|f8k|f30k')
     opt = parser.parse_args()
     main(opt.data_path, opt.data_name)

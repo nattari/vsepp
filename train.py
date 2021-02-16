@@ -19,9 +19,10 @@ import argparse
 def main():
     # Hyper Parameters
     parser = argparse.ArgumentParser()
-    parser.add_argument('--data_path', default='/w/31/faghri/vsepp_data/',
+    parser.add_argument('--data_path', default='/Users/nattari/Bielefeld_Work/'
+                        'Data/CUB_200_2011/CUB_200_2011',
                         help='path to datasets')
-    parser.add_argument('--data_name', default='precomp',
+    parser.add_argument('--data_name', default='cub',
                         help='{coco,f8k,f30k,10crop}_precomp|coco|f8k|f30k')
     parser.add_argument('--vocab_path', default='./vocab/',
                         help='Path to saved vocabulary pickle files.')
@@ -64,7 +65,7 @@ def main():
     parser.add_argument('--cnn_type', default='vgg19',
                         help="""The CNN used for image encoder
                         (e.g. vgg19, resnet152)""")
-    parser.add_argument('--use_restval', action='store_true',
+    parser.add_argument('--use_restval', action='store_false',
                         help='Use the restval data for training on MSCOCO.')
     parser.add_argument('--measure', default='cosine',
                         help='Similarity measure used (cosine|order)')
@@ -90,6 +91,7 @@ def main():
     train_loader, val_loader = data.get_loaders(
         opt.data_name, vocab, opt.crop_size, opt.batch_size, opt.workers, opt)
 
+    exit(0)
     # Construct the model
     model = VSE(opt)
 
