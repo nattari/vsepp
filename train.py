@@ -19,8 +19,7 @@ import argparse
 def main():
     # Hyper Parameters
     parser = argparse.ArgumentParser()
-    parser.add_argument('--data_path', default='/Users/nattari/Bielefeld_Work/'
-                        'Data/CUB_200_2011/CUB_200_2011',
+    parser.add_argument('--data_path', default='/home/nattari/Nazia/data/Birds/CUB_200_2011',
                         help='path to datasets')
     parser.add_argument('--data_name', default='cub',
                         help='{coco,f8k,f30k,10crop}_precomp|coco|f8k|f30k')

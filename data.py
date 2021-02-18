@@ -219,8 +219,9 @@ class CubDataset(data.Dataset):
         root = self.root
         ann_id = self.ids[index]
         img_id = ann_id[0]
-        caption = self.dataset[img_id]['all_captions'][ann_id[1]]['raw']
-        path = self.dataset[img_id]['filename']
+        caption = self.dataset['info'][img_id]['all_captions'][ann_id[1]]
+        path = os.path.join(self.dataset['info'][img_id]['class_name'],
+                            self.dataset['info'][img_id]['image_name'])
 
         image = Image.open(os.path.join(root, path)).convert('RGB')
         if self.transform is not None:
