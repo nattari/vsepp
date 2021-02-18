@@ -91,7 +91,6 @@ def main():
     train_loader, val_loader = data.get_loaders(
         opt.data_name, vocab, opt.crop_size, opt.batch_size, opt.workers, opt)
 
-    exit(0)
     # Construct the model
     model = VSE(opt)
 
