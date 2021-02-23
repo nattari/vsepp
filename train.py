@@ -1,4 +1,4 @@
-import pickle
+import pickle5 as pickle
 import os
 import time
 import shutil
@@ -19,9 +19,9 @@ import argparse
 def main():
     # Hyper Parameters
     parser = argparse.ArgumentParser()
-    parser.add_argument('--data_path', default='/w/31/faghri/vsepp_data/',
+    parser.add_argument('--data_path', default='/home/nattari/Nazia/data/Birds/CUB_200_2011',
                         help='path to datasets')
-    parser.add_argument('--data_name', default='precomp',
+    parser.add_argument('--data_name', default='cub',
                         help='{coco,f8k,f30k,10crop}_precomp|coco|f8k|f30k')
     parser.add_argument('--vocab_path', default='./vocab/',
                         help='Path to saved vocabulary pickle files.')
@@ -51,7 +51,7 @@ def main():
                         help='Number of steps to print and record the log.')
     parser.add_argument('--val_step', default=500, type=int,
                         help='Number of steps to run validation.')
-    parser.add_argument('--logger_name', default='runs/runX',
+    parser.add_argument('--logger_name', default='runs/cub',
                         help='Path to save the model and Tensorboard log.')
     parser.add_argument('--resume', default='', type=str, metavar='PATH',
                         help='path to latest checkpoint (default: none)')
@@ -76,7 +76,6 @@ def main():
                         help='Ensure the training is always done in '
                         'train mode (Not recommended).')
     opt = parser.parse_args()
-    print(opt)
 
     logging.basicConfig(format='%(asctime)s %(message)s', level=logging.INFO)
     tb_logger.configure(opt.logger_name, flush_secs=5)
@@ -91,6 +90,7 @@ def main():
         opt.data_name, vocab, opt.crop_size, opt.batch_size, opt.workers, opt)
 
     # Construct the model
+    print('fine tune status', opt.finetune)
     model = VSE(opt)
 
     # optionally resume from a checkpoint

@@ -6,6 +6,7 @@ from pycocotools.coco import COCO
 import json
 import argparse
 import os
+import string
 
 annotations = {
     'coco_precomp': ['train_caps.txt', 'dev_caps.txt'],
@@ -16,6 +17,7 @@ annotations = {
     'f30k_precomp': ['train_caps.txt', 'dev_caps.txt'],
     'f8k': ['dataset_flickr8k.json'],
     'f30k': ['dataset_flickr30k.json'],
+    'cub': ['train_instance_caption.json'],
 }
 
 
@@ -61,6 +63,16 @@ def from_flickr_json(path):
     return captions
 
 
+def from_cub_json(path):
+    dataset = json.load(open(path, 'r', encoding='utf-8'))['info']
+    captions = []
+    for i, d in enumerate(dataset):
+        if d['split'] in {'train'} or d['split'] in {'val'}:
+            captions += [x for x in d['all_captions']]
+        #captions += [x for x in d['all_captions']]
+    return captions
+
+
 def from_txt(txt):
     captions = []
     with open(txt, 'rb') as f:
@@ -78,18 +90,27 @@ def build_vocab(data_path, data_name, jsons, threshold):
             captions = from_coco_json(full_path)
         elif data_name == 'f8k' or data_name == 'f30k':
             captions = from_flickr_json(full_path)
+        elif data_name == 'cub':
+            print('coming to here')
+            full_path = os.path.join(data_path, path)
+            captions = from_cub_json(full_path)
         else:
             captions = from_txt(full_path)
+
         for i, caption in enumerate(captions):
-            tokens = nltk.tokenize.word_tokenize(
-                caption.lower().decode('utf-8'))
+            caption = caption.casefold()
+            caption = caption.translate(str.maketrans('', '', string.punctuation))
+
+            tokens = nltk.tokenize.word_tokenize(caption)
+            #tokens = [word.lower() for word in tokens if word.isalpha()]
+
             counter.update(tokens)
 
             if i % 1000 == 0:
                 print("[%d/%d] tokenized the captions." % (i, len(captions)))
 
     # Discard if the occurrence of the word is less than min_word_cnt.
-    words = [word for word, cnt in counter.items() if cnt >= threshold]
+    words = [word for word, cnt in counter.items() if cnt >= threshold and len(word) > 1]
 
     # Create a vocab wrapper and add some special tokens.
     vocab = Vocabulary()
@@ -105,7 +126,7 @@ def build_vocab(data_path, data_name, jsons, threshold):
 
 
 def main(data_path, data_name):
-    vocab = build_vocab(data_path, data_name, jsons=annotations, threshold=4)
+    vocab = build_vocab(data_path, data_name, jsons=annotations, threshold=5)
     with open('./vocab/%s_vocab.pkl' % data_name, 'wb') as f:
         pickle.dump(vocab, f, pickle.HIGHEST_PROTOCOL)
     print("Saved vocabulary file to ", './vocab/%s_vocab.pkl' % data_name)
@@ -113,8 +134,8 @@ def main(data_path, data_name):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--data_path', default='/w/31/faghri/vsepp_data/')
-    parser.add_argument('--data_name', default='coco',
+    parser.add_argument('--data_path', default='/home/nattari/Nazia/data/Birds/CUB_200_2011')
+    parser.add_argument('--data_name', default='cub',
                         help='{coco,f8k,f30k,10crop}_precomp|coco|f8k|f30k')
     opt = parser.parse_args()
     main(opt.data_path, opt.data_name)

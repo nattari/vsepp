@@ -381,7 +381,9 @@ class VSE(object):
 
         # measure accuracy and record loss
         self.optimizer.zero_grad()
+
         loss = self.forward_loss(img_emb, cap_emb)
+        print('erorr',loss.item())
 
         # compute gradient and do SGD step
         loss.backward()

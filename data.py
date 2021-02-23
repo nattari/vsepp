@@ -71,8 +71,60 @@ def get_paths(path, name='coco', use_restval=False):
         roots['val'] = {'img': imgdir, 'cap': cap}
         roots['test'] = {'img': imgdir, 'cap': cap}
         ids = {'train': None, 'val': None, 'test': None}
+    elif 'cub' == name:
+        imgdir = os.path.join(path, 'images')
+        cap = os.path.join(path, 'train_instance_caption.json')
+        roots['train'] = {'img': imgdir, 'cap': cap}
+        roots['val'] = {'img': imgdir, 'cap': cap}
+        roots['test'] = {'img': imgdir, 'cap': cap}
+        ids = {'train': None, 'val': None, 'test': None}
 
     return roots, ids
+
+
+class CubDataset(data.Dataset):
+    """
+    Dataset loader for CUB_200_2011 full datasets.
+    """
+
+    def __init__(self, root, json, split, vocab, transform=None):
+        self.root = root
+        self.vocab = vocab
+        self.split = split
+        self.transform = transform
+        self.dataset = jsonmod.load(open(json, 'r'))
+        self.ids = []
+        for i, d in enumerate(self.dataset['info']):
+            if d['split'] == split:
+                self.ids += [(i, x) for x in range(len(d['all_captions']))]
+
+    def __getitem__(self, index):
+        """This function returns a tuple that is further passed to collate_fn
+        """
+        vocab = self.vocab
+        root = self.root
+        ann_id = self.ids[index]
+        img_id = ann_id[0]
+        caption = self.dataset['info'][img_id]['all_captions'][ann_id[1]]
+        path = os.path.join(self.dataset['info'][img_id]['class_name'],
+                            self.dataset['info'][img_id]['image_name'])
+
+        image = Image.open(os.path.join(root, path)).convert('RGB')
+        if self.transform is not None:
+            image = self.transform(image)
+
+        # Convert caption (string) to word ids.
+        tokens = nltk.tokenize.word_tokenize(
+            str(caption).lower())
+        caption = []
+        caption.append(vocab('<start>'))
+        caption.extend([vocab(token) for token in tokens])
+        caption.append(vocab('<end>'))
+        target = torch.Tensor(caption)
+        return image, target, index, img_id
+
+    def __len__(self):
+        return len(self.ids)
 
 
 class CocoDataset(data.Dataset):
@@ -283,6 +335,12 @@ def get_loader_single(data_name, split, root, json, vocab, transform,
                                 json=json,
                                 vocab=vocab,
                                 transform=transform)
+    elif 'cub' in data_name:
+        dataset = CubDataset(root=root,
+                             split=split,
+                             json=json,
+                             vocab=vocab,
+                             transform=transform)
 
     # Data loader
     data_loader = torch.utils.data.DataLoader(dataset=dataset,
@@ -331,6 +389,26 @@ def get_loaders(data_name, vocab, crop_size, batch_size, workers, opt):
                                           batch_size, True, workers)
         val_loader = get_precomp_loader(dpath, 'dev', vocab, opt,
                                         batch_size, False, workers)
+    elif opt.data_name == 'cub':
+        roots, ids = get_paths(opt.data_path, data_name, opt.use_restval)
+
+        transform = get_transform(data_name, 'train', opt)
+        train_loader = get_loader_single(opt.data_name, 'train',
+                                         roots['train']['img'],
+                                         roots['train']['cap'],
+                                         vocab, transform, ids=ids['train'],
+                                         batch_size=batch_size, shuffle=True,
+                                         num_workers=workers,
+                                         collate_fn=collate_fn)
+
+        transform = get_transform(data_name, 'val', opt)
+        val_loader = get_loader_single(opt.data_name, 'val',
+                                       roots['val']['img'],
+                                       roots['val']['cap'],
+                                       vocab, transform, ids=ids['val'],
+                                       batch_size=batch_size, shuffle=False,
+                                       num_workers=workers,
+                                       collate_fn=collate_fn)
     else:
         # Build Dataset Loader
         roots, ids = get_paths(dpath, data_name, opt.use_restval)
