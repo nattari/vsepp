@@ -70,7 +70,7 @@ class LogCollector(object):
             tb_logger.log_value(prefix + k, v.val, step=step)
 
 
-def encode_data(model, data_loader, log_step=10, logging=print, on_gpu=False):
+def encode_data(model, data_loader, log_step=10, logging=print, on_gpu=True):
     """Encode all images and captions loadable by `data_loader`
     """
     batch_time = AverageMeter()

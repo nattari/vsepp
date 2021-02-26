@@ -7,7 +7,7 @@ from PIL import Image
 from pycocotools.coco import COCO
 import numpy as np
 import json as jsonmod
-
+import string
 
 def get_paths(path, name='coco', use_restval=False):
     """
@@ -114,8 +114,12 @@ class CubDataset(data.Dataset):
             image = self.transform(image)
 
         # Convert caption (string) to word ids.
-        tokens = nltk.tokenize.word_tokenize(
-            str(caption).lower())
+        caption = caption.casefold()
+        caption = caption.translate(str.maketrans('', '', string.punctuation))
+
+        tokens = nltk.tokenize.word_tokenize(caption)
+        #tokens = nltk.tokenize.word_tokenize(
+        #    str(caption).lower())
         caption = []
         caption.append(vocab('<start>'))
         caption.extend([vocab(token) for token in tokens])

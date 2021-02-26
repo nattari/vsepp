@@ -19,7 +19,7 @@ import argparse
 def main():
     # Hyper Parameters
     parser = argparse.ArgumentParser()
-    parser.add_argument('--data_path', default='/home/nattari/Nazia/data/Birds/CUB_200_2011',
+    parser.add_argument('--data_path', default='/media/compute/homes/nattari/data/CUB_200_2011',
                         help='path to datasets')
     parser.add_argument('--data_name', default='cub',
                         help='{coco,f8k,f30k,10crop}_precomp|coco|f8k|f30k')
@@ -41,7 +41,7 @@ def main():
                         help='Size of an image crop as the CNN input.')
     parser.add_argument('--num_layers', default=1, type=int,
                         help='Number of GRU layers.')
-    parser.add_argument('--learning_rate', default=.0002, type=float,
+    parser.add_argument('--learning_rate', default=.002, type=float,
                         help='Initial learning rate.')
     parser.add_argument('--lr_update', default=15, type=int,
                         help='Number of epochs to update the learning rate.')
@@ -84,6 +84,7 @@ def main():
     vocab = pickle.load(open(os.path.join(
         opt.vocab_path, '%s_vocab.pkl' % opt.data_name), 'rb'))
     opt.vocab_size = len(vocab)
+    #print(vocab.word2idx)
 
     # Load data loaders
     train_loader, val_loader = data.get_loaders(
@@ -182,6 +183,7 @@ def train(opt, train_loader, model, epoch, val_loader):
         # validate at every val_step
         if model.Eiters % opt.val_step == 0:
             validate(opt, val_loader, model)
+            model.train_start()
 
 
 def validate(opt, val_loader, model):

@@ -219,6 +219,7 @@ class EncoderText(nn.Module):
         I = torch.LongTensor(lengths).view(-1, 1, 1)
         I = Variable(I.expand(x.size(0), 1, self.embed_size) - 1)
         if torch.cuda.is_available():
+            #print('GPU compute')
             I = I.cuda()
         out = torch.gather(padded[0], 1, I).squeeze(1)
 
@@ -366,7 +367,7 @@ class VSE(object):
         """Compute the loss given pairs of image and caption embeddings
         """
         loss = self.criterion(img_emb, cap_emb)
-        self.logger.update('Le', loss.data[0], img_emb.size(0))
+        self.logger.update('Le', loss.data, img_emb.size(0))
         return loss
 
     def train_emb(self, images, captions, lengths, ids=None, *args):

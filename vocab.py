@@ -134,7 +134,7 @@ def main(data_path, data_name):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--data_path', default='/home/nattari/Nazia/data/Birds/CUB_200_2011')
+    parser.add_argument('--data_path', default='/media/compute/homes/nattari/data/CUB_200_2011')
     parser.add_argument('--data_name', default='cub',
                         help='{coco,f8k,f30k,10crop}_precomp|coco|f8k|f30k')
     opt = parser.parse_args()
